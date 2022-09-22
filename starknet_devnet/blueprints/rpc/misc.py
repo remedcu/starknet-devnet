@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import Union
 
 from starknet_devnet.blueprints.rpc.structures.payloads import Felt, Address
+from starknet_devnet.blueprints.rpc.structures.types import BlockId
+from starknet_devnet.blueprints.rpc.utils import get_block_by_block_id
 from starknet_devnet.state import state
 
 
@@ -28,11 +30,14 @@ async def syncing() -> Union[dict, bool]:
 
 
 # pylint: disable=redefined-builtin
-async def get_events(filter: dict) -> dict:
+async def get_events(block_id: BlockId) -> int:
     """
     Returns all events matching the given filter
     """
-    raise NotImplementedError()
+    # TODO: move to the new file?
+    # TODO: get events and filter them -> EVENT_FILTER & RESULT_PAGE_REQUEST
+    block = get_block_by_block_id(block_id)
+    return 42
 
 
 async def get_nonce(contract_address: Address) -> Felt:
