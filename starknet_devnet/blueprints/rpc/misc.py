@@ -35,9 +35,11 @@ async def get_events(block_id: BlockId) -> int:
     Returns all events matching the given filter
     """
     # TODO: move to the new file?
-    # TODO: get events and filter them -> EVENT_FILTER & RESULT_PAGE_REQUEST
-    block = get_block_by_block_id(block_id)
-    return 42
+    # TODO: filter events -> EVENT_FILTER & RESULT_PAGE_REQUEST
+    devnet_state = state.starknet_wrapper.get_state()
+    print("devnet_state", devnet_state.events)
+
+    return devnet_state.events
 
 
 async def get_nonce(contract_address: Address) -> Felt:
