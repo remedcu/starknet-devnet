@@ -6,9 +6,7 @@ from __future__ import annotations
 
 from typing import Union
 
-from starknet_devnet.blueprints.rpc.structures.payloads import Felt, Address
-from starknet_devnet.blueprints.rpc.structures.types import BlockId
-from starknet_devnet.blueprints.rpc.utils import get_block_by_block_id
+from starknet_devnet.blueprints.rpc.structures.types import BlockId, BlockNumber, Felt, Address
 from starknet_devnet.state import state
 
 
@@ -30,14 +28,28 @@ async def syncing() -> Union[dict, bool]:
 
 
 # pylint: disable=redefined-builtin
-async def get_events(block_id: BlockId) -> int:
+async def get_events(from_block: BlockId, to_block: BlockId, address: Address) -> str:
     """
     Returns all events matching the given filter
     """
     # TODO: move to the new file?
-    # TODO: filter events -> EVENT_FILTER & RESULT_PAGE_REQUEST
+    # TODO: what about RESULT_PAGE_REQUEST?
     devnet_state = state.starknet_wrapper.get_state()
     print("devnet_state", devnet_state.events)
+ 
+    number_of_blocks_start = from_block
+    if to_block == "latest":
+        number_of_blocks_end = state.starknet_wrapper.blocks.get_number_of_blocks()
+    else:
+        number_of_blocks_end = to_block
+    
+    for i in range(int(number_of_blocks_start), int(number_of_blocks_end)):
+        block = state.starknet_wrapper.blocks.get_by_number(i)
+        if block.transaction_receipts != ():
+            print('Events at ', i, ': ', block.transaction_receipts[0].events) 
+
+    # TODO: filters
+    # keys as array [a,b,c] = a or b or c
 
     return devnet_state.events
 
