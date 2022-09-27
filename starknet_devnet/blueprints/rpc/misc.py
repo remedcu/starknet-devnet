@@ -65,7 +65,7 @@ async def get_events(from_block: BlockId, to_block: BlockId, address: Address, k
                 elif is_empty(keys):
                     event_to_add = event
                 else:
-                    event_to_add = "" # Get rid of this clear
+                    continue
 
                 if address == "":
                     events.append(event_to_add)
