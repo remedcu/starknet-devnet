@@ -148,6 +148,12 @@ def parse_args(raw_args: List[str]):
         default=DEFAULT_TIMEOUT,
         help=f"Specify the server timeout in seconds; defaults to {DEFAULT_TIMEOUT}",
     )
+    parser.add_argument(
+        "--account-path",
+        help="Specify the account implementation to be used for predeploying; "
+        "should be a path to the compiled JSON artifact; "
+        "defaults to a fork of OpenZeppelin v0.4.0b",
+    )
     # Uncomment this once fork support is added
     # parser.add_argument(
     #     "--fork", "-f",
@@ -177,3 +183,4 @@ class DevnetConfig:
         self.start_time = self.args.start_time
         self.gas_price = self.args.gas_price
         self.lite_mode = self.args.lite_mode
+        self.account_path = self.args.account_path
