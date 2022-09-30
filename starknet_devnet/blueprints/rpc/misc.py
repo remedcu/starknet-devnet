@@ -42,6 +42,7 @@ async def get_events(from_block: BlockId, to_block: BlockId, address: Address, k
     # TODO: move to the new file?
     # TODO: what about RESULT_PAGE_REQUEST and paging?
     # TODO: add tests (test case with address 0x not 0x0)
+    # TODO: Refactor this in declarative way to avoid for if for if
 
     devnet_state = state.starknet_wrapper.get_state()
     print("devnet_state", devnet_state.events)
@@ -52,7 +53,6 @@ async def get_events(from_block: BlockId, to_block: BlockId, address: Address, k
     else:
         number_of_blocks_end = to_block
 
-    # TODO: Refactor this to avoid for if for if and is_not_empty/is_empty/else case with keys
     events = []
     for i in range(int(number_of_blocks_start), int(number_of_blocks_end)):
         block = state.starknet_wrapper.blocks.get_by_number(i)

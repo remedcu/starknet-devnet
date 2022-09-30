@@ -14,6 +14,33 @@ from starknet_devnet.general_config import DEFAULT_GENERAL_CONFIG
 
 from .rpc_utils import rpc_call, gateway_call, get_block_with_transaction, pad_zero
 
+from ..account import (
+    invoke,
+)
+from ..util import (
+    deploy,
+)
+from ..shared import (
+    PREDEPLOYED_ACCOUNT_ADDRESS,
+    PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
+    PREDEPLOY_ACCOUNT_CLI_ARGS,
+    EVENTS_CONTRACT_PATH
+)
+
+
+@pytest.fixture(name="expected_data")
+def fixture_expected_data(request):
+    """
+    Fixture to return expected data
+    """
+    return request.param
+
+@pytest.fixture(name="input_data")
+def fixture_input_data(request):
+    """
+    Fixture to input data
+    """
+    return request.param
 
 # pylint: disable=too-many-locals
 @pytest.mark.usefixtures("run_devnet_in_background")
@@ -124,16 +151,39 @@ def test_call_with_invalid_params(params):
 
 
 @pytest.mark.usefixtures("run_devnet_in_background")
-def test_get_events_empty_with_no_events():
+@pytest.mark.parametrize(
+    "run_devnet_in_background, input_data, expected_data",
+    [
+        (
+            [*PREDEPLOY_ACCOUNT_CLI_ARGS],
+            {
+                "from_block": "0",
+                "to_block": "latest",
+                "address": "",
+                "keys": []
+            },
+            1744303484486821561902174603220722448499782664094942993128426674277214273437,
+        ),
+    ],
+    indirect=True,
+)
+def test_get_events_empty_with_no_events(input_data, expected_data):
     """
     Test
     """
-    resp = rpc_call("starknet_getEvents", params={
-            "from_block": "0",
-            "to_block": "latest",
-            "address": "",
-            "keys": []
-        })
-    print("resp", resp)
+    deploy_info = deploy(EVENTS_CONTRACT_PATH)
+    print("deploy_info", deploy_info)    
+    print("input_data", input_data)    
 
-    assert resp["result"] == []
+    for i in range(1, 6):
+        invoke_tx_hash = invoke(
+            calls=[(deploy_info["address"], "increase_balance", [i])],
+            account_address=PREDEPLOYED_ACCOUNT_ADDRESS,
+            private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
+        )
+        print("invoke_tx_hash", invoke_tx_hash)
+
+    resp = rpc_call("starknet_getEvents", params=input_data)
+    print("results", resp["result"])
+
+    assert resp["result"][0]["keys"] == [expected_data]
