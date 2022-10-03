@@ -24,7 +24,7 @@ from ..shared import (
     PREDEPLOYED_ACCOUNT_ADDRESS,
     PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
     PREDEPLOY_ACCOUNT_CLI_ARGS,
-    EVENTS_CONTRACT_PATH
+    EVENTS_CONTRACT_PATH,
 )
 
 
@@ -35,12 +35,14 @@ def fixture_expected_data(request):
     """
     return request.param
 
+
 @pytest.fixture(name="input_data")
 def fixture_input_data(request):
     """
     Fixture to input data
     """
     return request.param
+
 
 # pylint: disable=too-many-locals
 @pytest.mark.usefixtures("run_devnet_in_background")
@@ -156,34 +158,74 @@ def test_call_with_invalid_params(params):
     [
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
+            {"from_block": "0", "to_block": "latest", "address": "", "keys": []},
+            4,
+        ),
+        (
+            [*PREDEPLOY_ACCOUNT_CLI_ARGS],
+            {"from_block": "0", "to_block": "3", "address": "", "keys": []},
+            2,
+        ),
+        (
+            [*PREDEPLOY_ACCOUNT_CLI_ARGS],
+            {"from_block": "3", "to_block": "4", "address": "", "keys": []},
+            2,
+        ),
+        (
+            [*PREDEPLOY_ACCOUNT_CLI_ARGS],
+            {
+                "from_block": "0",
+                "to_block": "latest",
+                "address": "0x62230eA046a9a5fbc261ac77d03c8d41e5d442db2284587570ab46455fd2488",
+                "keys": [],
+            },
+            2,
+        ),
+        (
+            [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             {
                 "from_block": "0",
                 "to_block": "latest",
                 "address": "",
-                "keys": []
+                "keys": [
+                    "0x99cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9"
+                ],
             },
-            1744303484486821561902174603220722448499782664094942993128426674277214273437,
+            2,
+        ),
+        (
+            [*PREDEPLOY_ACCOUNT_CLI_ARGS],
+            {
+                "from_block": "0",
+                "to_block": "latest",
+                "address": "",
+                "keys": [
+                    "0x99cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
+                    "0x3db3da4221c078e78bd987e54e1cc24570d89a7002cefa33e548d6c72c73f9d",
+                ],
+            },
+            4,
         ),
     ],
     indirect=True,
 )
 def test_get_events_empty_with_no_events(input_data, expected_data):
     """
-    Test
+    Test RPC get_events.
     """
     deploy_info = deploy(EVENTS_CONTRACT_PATH)
-    print("deploy_info", deploy_info)    
-    print("input_data", input_data)    
 
-    for i in range(1, 6):
-        invoke_tx_hash = invoke(
+    for i in range(0, 2):
+        # TODO: Why invokes generate estimation fee events? Is that expected behaviour?
+        invoke(
             calls=[(deploy_info["address"], "increase_balance", [i])],
             account_address=PREDEPLOYED_ACCOUNT_ADDRESS,
             private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
         )
-        print("invoke_tx_hash", invoke_tx_hash)
+        print("invoke_tx_hash: ", i)
 
     resp = rpc_call("starknet_getEvents", params=input_data)
     print("results", resp["result"])
+    print("resp[result].count", len(resp["result"]))
 
-    assert resp["result"][0]["keys"] == [expected_data]
+    assert len(resp["result"]) == expected_data
