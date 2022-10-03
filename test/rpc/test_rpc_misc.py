@@ -28,18 +28,18 @@ from ..shared import (
 )
 
 
-@pytest.fixture(name="expected_data")
-def fixture_expected_data(request):
-    """
-    Fixture to return expected data
-    """
-    return request.param
-
-
 @pytest.fixture(name="input_data")
 def fixture_input_data(request):
     """
     Fixture to input data
+    """
+    return request.param
+
+
+@pytest.fixture(name="expected_data")
+def fixture_expected_data(request):
+    """
+    Fixture to return expected data
     """
     return request.param
 
