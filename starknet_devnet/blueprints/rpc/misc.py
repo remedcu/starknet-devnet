@@ -27,6 +27,28 @@ def is_not_empty(value):
     """
     return not is_empty(value)
 
+def filter_address(address, event):
+    """
+    Filter by address.
+    """
+    if address == "" or event.from_address == int(address, 0): return True
+
+def filter_keys(keys, event):
+    """
+    Filter by keys.
+    """
+    if (is_empty(keys)) or (is_not_empty(keys) and bool(set(event.keys) & set(keys))): return True
+
+def get_events_from_block(block, address, keys):
+    """
+    Return filtered events.
+    """
+    events = []
+    for event in block.transaction_receipts[0].events:
+        if filter_keys(keys, event) and filter_address(address, event): events.append(event)
+
+    return events
+
 
 async def chain_id() -> str:
     """
@@ -52,49 +74,16 @@ async def get_events(
     """
     Returns all events matching the given filter
     """
-    # TODO: Move to the new file?
     # TODO: What about RESULT_PAGE_REQUEST and paging?
-    # TODO: Refactor this in declarative way to avoid for if for if
-
-    devnet_state = state.starknet_wrapper.get_state()
-    print("devnet_state.events", devnet_state.events)
-
-    number_of_blocks_start = from_block
-    if to_block == "latest":
-        number_of_blocks_end = state.starknet_wrapper.blocks.get_number_of_blocks()
-    else:
-        number_of_blocks_end = to_block
-
-    print("all blocks", state.starknet_wrapper.blocks.get_number_of_blocks())
-
-    new_keys = []
-    for k in keys:
-        new_keys.append(int(k, 0))
-
-    keys = new_keys
-    print("keys", keys)
 
     events = []
-    for i in range(int(number_of_blocks_start), int(number_of_blocks_end)):
-        block = state.starknet_wrapper.blocks.get_by_number(i)
-        if block.transaction_receipts != ():
-            for event in block.transaction_receipts[0].events:
-                event_to_add = event
+    keys = [int(k, 0) for k in keys]
+    to_block = state.starknet_wrapper.blocks.get_number_of_blocks() if to_block == "latest" else to_block
 
-                if is_not_empty(keys) and bool(set(event.keys) & set(keys)):
-                    event_to_add = event
-                elif is_empty(keys):
-                    event_to_add = event
-                else:
-                    continue
+    for block_number in range(int(from_block), int(to_block)):
+        block = state.starknet_wrapper.blocks.get_by_number(block_number)
+        if block.transaction_receipts != (): events.extend(get_events_from_block(block, address, keys))
 
-                if address == "":
-                    events.append(event_to_add)
-                elif address != "" and event.from_address == int(address, 0):
-                    events.append(event_to_add)
-                    print("adress filtering at ", i, ": ", event_to_add)
-
-    print("events: ", events)
     return events
 
 
