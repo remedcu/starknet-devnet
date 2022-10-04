@@ -27,17 +27,22 @@ def is_not_empty(value):
     """
     return not is_empty(value)
 
+
 def filter_address(address, event):
     """
     Filter by address.
     """
-    if address == "" or event.from_address == int(address, 0): return True
+    return bool(address == "" or event.from_address == int(address, 0))
+
 
 def filter_keys(keys, event):
     """
     Filter by keys.
     """
-    if (is_empty(keys)) or (is_not_empty(keys) and bool(set(event.keys) & set(keys))): return True
+    return bool(
+        (is_empty(keys)) or (is_not_empty(keys) and bool(set(event.keys) & set(keys)))
+    )
+
 
 def get_events_from_block(block, address, keys):
     """
@@ -45,7 +50,8 @@ def get_events_from_block(block, address, keys):
     """
     events = []
     for event in block.transaction_receipts[0].events:
-        if filter_keys(keys, event) and filter_address(address, event): events.append(event)
+        if filter_keys(keys, event) and filter_address(address, event):
+            events.append(event)
 
     return events
 
@@ -74,15 +80,19 @@ async def get_events(
     """
     Returns all events matching the given filter
     """
-    # TODO: What about RESULT_PAGE_REQUEST and paging?
 
     events = []
     keys = [int(k, 0) for k in keys]
-    to_block = state.starknet_wrapper.blocks.get_number_of_blocks() if to_block == "latest" else to_block
+    to_block = (
+        state.starknet_wrapper.blocks.get_number_of_blocks()
+        if to_block == "latest"
+        else to_block
+    )
 
     for block_number in range(int(from_block), int(to_block)):
         block = state.starknet_wrapper.blocks.get_by_number(block_number)
-        if block.transaction_receipts != (): events.extend(get_events_from_block(block, address, keys))
+        if block.transaction_receipts != ():
+            events.extend(get_events_from_block(block, address, keys))
 
     return events
 

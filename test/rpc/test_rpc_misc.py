@@ -214,18 +214,11 @@ def test_get_events_empty_with_no_events(input_data, expected_data):
     Test RPC get_events.
     """
     deploy_info = deploy(EVENTS_CONTRACT_PATH)
-
     for i in range(0, 2):
-        # TODO: Why invokes generate estimation fee events? Is that expected behaviour?
         invoke(
             calls=[(deploy_info["address"], "increase_balance", [i])],
             account_address=PREDEPLOYED_ACCOUNT_ADDRESS,
             private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
         )
-        print("invoke_tx_hash: ", i)
-
     resp = rpc_call("starknet_getEvents", params=input_data)
-    print("results", resp["result"])
-    print("resp[result].count", len(resp["result"]))
-
     assert len(resp["result"]) == expected_data
