@@ -4,6 +4,7 @@ RPC miscellaneous endpoints
 
 from __future__ import annotations
 from itertools import islice
+from queue import Empty
 from typing import Union, List
 import collections
 from starknet_devnet.blueprints.rpc.structures.types import (
@@ -73,7 +74,7 @@ async def syncing() -> Union[dict, bool]:
     return False
 
 
-# pylint: disable=redefined-builtin
+# pylint: disable=too-many-arguments
 async def get_events(
     from_block: BlockId,
     to_block: BlockId,
@@ -84,12 +85,12 @@ async def get_events(
 ) -> str:
     """
     Returns all events matching the given filters.
-    
+
     In our implementation continuation_token from v0.2.0 is a number and works
     as page_number as it was v0.1.0 but it's string to be consistent with v0.2.0.
 
-    In state.starknet_wrapper.get_state().events there is no relation between blocks. 
-    This is why we need to iterate block by block, take all events, 
+    In state.starknet_wrapper.get_state().events there is no relation between blocks.
+    This is why we need to iterate block by block, take all events,
     and chunk it later which is not an optimal solution.
     """
     events = []
@@ -108,7 +109,9 @@ async def get_events(
     if chunk_size > 0 and continuation_token == "":
         events = events[:chunk_size]
     elif chunk_size > 0 and continuation_token != "":
-        events = (list(islice(events, chunk_size * (int(continuation_token)), None)))[:chunk_size]
+        events = (list(islice(events, chunk_size * (int(continuation_token)), None)))[
+            :chunk_size
+        ]
 
     # TODO: return continuation_token
     return events

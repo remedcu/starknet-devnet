@@ -158,27 +158,45 @@ def test_call_with_invalid_params(params):
     [
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
-            {"from_block": "0", "to_block": "latest",},
+            {
+                "from_block": "0",
+                "to_block": "latest",
+            },
             4,
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
-            {"from_block": "0", "to_block": "3",},
+            {
+                "from_block": "0",
+                "to_block": "3",
+            },
             2,
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
-            {"from_block": "3", "to_block": "4",},
+            {
+                "from_block": "3",
+                "to_block": "4",
+            },
             2,
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
-            {"from_block": "0", "to_block": "latest", "chunk_size": 3,},
+            {
+                "from_block": "0",
+                "to_block": "latest",
+                "chunk_size": 3,
+            },
             3,
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
-            {"from_block": "0", "to_block": "latest", "chunk_size": 3, "continuation_token": "1",},
+            {
+                "from_block": "0",
+                "to_block": "latest",
+                "chunk_size": 3,
+                "continuation_token": "1",
+            },
             1,
         ),
         (
