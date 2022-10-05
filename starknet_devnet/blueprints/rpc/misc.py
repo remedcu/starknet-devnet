@@ -3,7 +3,7 @@ RPC miscellaneous endpoints
 """
 
 from __future__ import annotations
-
+from itertools import islice
 from typing import Union, List
 import collections
 from starknet_devnet.blueprints.rpc.structures.types import (
@@ -83,15 +83,15 @@ async def get_events(
     continuation_token: str = "",
 ) -> str:
     """
-    Returns all events matching the given filters
+    Returns all events matching the given filters.
+    
+    In our implementation continuation_token from v0.2.0 is a number and works
+    as page_number as it was v0.1.0 but it's string to be consistent with v0.2.0.
+
+    In state.starknet_wrapper.get_state().events there is no relation between blocks. 
+    This is why we need to iterate block by block, take all events, 
+    and chunk it later which is not an optimal solution.
     """
-
-    devnet_state = state.starknet_wrapper.get_state()
-    print("devnet_state.events", devnet_state.events)
-    # print("devnet_state.events.count", devnet_state.events.count)
-    print("continuation_token", continuation_token)
-    print("chunk_size", chunk_size)
-
     events = []
     keys = [int(k, 0) for k in keys]
     to_block = (
@@ -105,7 +105,12 @@ async def get_events(
         if block.transaction_receipts != ():
             events.extend(get_events_from_block(block, address, keys))
 
-    # TODO: set continuation_token
+    if chunk_size > 0 and continuation_token == "":
+        events = events[:chunk_size]
+    elif chunk_size > 0 and continuation_token != "":
+        events = (list(islice(events, chunk_size * (int(continuation_token)), None)))[:chunk_size]
+
+    # TODO: return continuation_token
     return events
 
 
