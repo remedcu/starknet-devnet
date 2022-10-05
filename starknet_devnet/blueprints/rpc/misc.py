@@ -12,6 +12,10 @@ from starknet_devnet.blueprints.rpc.structures.types import (
     Felt,
     Address,
 )
+from starknet_devnet.blueprints.rpc.structures.responses import (
+    RpcEventsResult,
+)
+
 from starknet_devnet.state import state
 
 
@@ -79,7 +83,7 @@ async def get_events(
     from_block: BlockId,
     to_block: BlockId,
     address: Address = "",
-    keys: List[Address] = [],
+    keys: List[Address] = Empty,
     chunk_size: int = 0,
     continuation_token: str = "",
 ) -> str:
@@ -94,7 +98,8 @@ async def get_events(
     and chunk it later which is not an optimal solution.
     """
     events = []
-    keys = [int(k, 0) for k in keys]
+    keys = [] if keys == Empty else [int(k, 0) for k in keys]
+
     to_block = (
         state.starknet_wrapper.blocks.get_number_of_blocks()
         if to_block == "latest"
@@ -113,8 +118,10 @@ async def get_events(
             :chunk_size
         ]
 
-    # TODO: return continuation_token
-    return events
+    return RpcEventsResult(
+        events=events,
+        continuation_token=continuation_token,
+    )
 
 
 async def get_nonce(contract_address: Address) -> Felt:

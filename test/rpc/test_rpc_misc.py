@@ -259,4 +259,4 @@ def test_get_events(input_data, expected_data):
             private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
         )
     resp = rpc_call("starknet_getEvents", params=input_data)
-    assert len(resp["result"]) == expected_data
+    assert len(resp["result"]["events"]) == expected_data
