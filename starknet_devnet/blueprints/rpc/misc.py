@@ -75,11 +75,22 @@ async def syncing() -> Union[dict, bool]:
 
 # pylint: disable=redefined-builtin
 async def get_events(
-    from_block: BlockId, to_block: BlockId, address: Address, keys: List[Address]
+    from_block: BlockId,
+    to_block: BlockId,
+    address: Address = "",
+    keys: List[Address] = [],
+    chunk_size: int = 0,
+    continuation_token: str = "",
 ) -> str:
     """
-    Returns all events matching the given filter
+    Returns all events matching the given filters
     """
+
+    devnet_state = state.starknet_wrapper.get_state()
+    print("devnet_state.events", devnet_state.events)
+    # print("devnet_state.events.count", devnet_state.events.count)
+    print("continuation_token", continuation_token)
+    print("chunk_size", chunk_size)
 
     events = []
     keys = [int(k, 0) for k in keys]
@@ -94,6 +105,7 @@ async def get_events(
         if block.transaction_receipts != ():
             events.extend(get_events_from_block(block, address, keys))
 
+    # TODO: set continuation_token
     return events
 
 
