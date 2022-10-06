@@ -31,7 +31,7 @@ from ..shared import (
 @pytest.fixture(name="input_data")
 def fixture_input_data(request):
     """
-    Fixture to input data
+    Fixture for input data
     """
     return request.param
 
@@ -39,7 +39,7 @@ def fixture_input_data(request):
 @pytest.fixture(name="expected_data")
 def fixture_expected_data(request):
     """
-    Fixture to return expected data
+    Fixture for return expected data
     """
     return request.param
 

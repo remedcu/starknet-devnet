@@ -90,8 +90,7 @@ async def get_events(
     """
     Returns all events matching the given filters.
 
-    In our implementation continuation_token from v0.2.0 is a number and works
-    as page_number as it was v0.1.0 but it's string to be consistent with v0.2.0.
+    In our implementation continuation_token is just a number.
 
     In state.starknet_wrapper.get_state().events there is no relation between blocks.
     This is why we need to iterate block by block, take all events,
@@ -99,7 +98,6 @@ async def get_events(
     """
     events = []
     keys = [] if keys == Empty else [int(k, 0) for k in keys]
-
     to_block = (
         state.starknet_wrapper.blocks.get_number_of_blocks()
         if to_block == "latest"
