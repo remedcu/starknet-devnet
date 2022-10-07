@@ -54,7 +54,7 @@ def get_events_from_block(block, address, keys):
     Return filtered events.
     """
     events = []
-    for event in block.transaction_receipts[0].events:
+    for event in [e for r in block.transaction_receipts for e in r.events]:
         if filter_keys(keys, event) and filter_address(address, event):
             events.append(event)
 
