@@ -21,6 +21,9 @@ from .test_data.get_events import (
     BLOCK_0_LATEST_KEY,
     BLOCK_0_LATEST_KEYS,
     BLOCK_0_LATEST_ADDRESS_KEYS,
+    EVENT_DATA_0,
+    EVENT_DATA_1,
+    EVENT_FEE,
 )
 
 from .rpc_utils import rpc_call, gateway_call, get_block_with_transaction, pad_zero
@@ -162,7 +165,6 @@ def test_call_with_invalid_params(params):
     ex = rpc_call(method="starknet_getClass", params=params)
     assert ex["error"] == {"code": -32602, "message": "Invalid params"}
 
-
 @pytest.mark.usefixtures("run_devnet_in_background")
 @pytest.mark.parametrize(
     "run_devnet_in_background, input_data, expected_data",
@@ -170,47 +172,47 @@ def test_call_with_invalid_params(params):
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_0_LATEST,
-            4,
+            [EVENT_DATA_0, EVENT_FEE, EVENT_DATA_1, EVENT_FEE],
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_0_3,
-            2,
+            [EVENT_DATA_0, EVENT_FEE],
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_3_4,
-            2,
+            [EVENT_DATA_1, EVENT_FEE],
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_0_LATEST_CHUNK_3_0,
-            3,
+            [EVENT_DATA_0, EVENT_FEE, EVENT_DATA_1],
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_0_LATEST_CHUNK_3_1,
-            1,
+            [EVENT_FEE],
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_0_LATEST_ADDRESS,
-            2,
+            [EVENT_FEE, EVENT_FEE],
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_0_LATEST_KEY,
-            2,
+            [EVENT_FEE, EVENT_FEE],
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_0_LATEST_KEYS,
-            4,
+            [EVENT_DATA_0, EVENT_FEE, EVENT_DATA_1, EVENT_FEE],
         ),
         (
             [*PREDEPLOY_ACCOUNT_CLI_ARGS],
             BLOCK_0_LATEST_ADDRESS_KEYS,
-            2,
+            [EVENT_FEE, EVENT_FEE],
         ),
     ],
     indirect=True,
@@ -227,4 +229,5 @@ def test_get_events(input_data, expected_data):
             private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
         )
     resp = rpc_call("starknet_getEvents", params=input_data)
-    assert len(resp["result"]["events"]) == expected_data
+    for i in range(0, len(expected_data)):
+        assert str(resp["result"]["events"][i]["data"]) == expected_data[i]
